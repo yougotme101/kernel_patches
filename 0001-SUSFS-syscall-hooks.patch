@@ -1,6 +1,6 @@
 From f7d6c540337bc2579d3493a3f842e72cd49c17ee Mon Sep 17 00:00:00 2001
 From: "env." <162432464+belowzeroiq@users.noreply.github.com>
-Date: Thu, 3 Jul 2025 23:04:56 +0700
+Date: Thu, 6 Nov 2025 23:04:56 +0700
 Subject: [PATCH] SUSFS: syscall hooks
 
 ---
@@ -10,6 +10,7 @@ Subject: [PATCH] SUSFS: syscall hooks
  fs/open.c             |  8 ++++++++
  fs/read_write.c       | 10 ++++++++++
  fs/stat.c             | 10 ++++++++++
+ kernel/reboot.c       |  9 +++++++++
  6 files changed, 63 insertions(+)
 
 diff --git a/drivers/input/input.c b/drivers/input/input.c
@@ -182,6 +183,33 @@ index 6383203890fc..092791e0abdf 100644
  	error = vfs_fstatat(dfd, filename, &stat, flag);
  	if (error)
  		return error;
+ 		diff --git a/kernel/reboot.c b/kernel/reboot.c
+index 5105f2a46359..284c97c04535 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -305,6 +305,11 @@ EXPORT_SYMBOL_GPL(kernel_power_off);
+ 
+ DEFINE_MUTEX(system_transition_mutex);
+ 
++#if defined(CONFIG_KSU) && defined(CONFIG_KSU_MANUAL_HOOK)
++__attribute__((hot))
++extern int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user **arg);
++#endif
++
+ /*
+  * Reboot system call: for obvious reasons only root may call it,
+  * and even root needs to set up some magic numbers in the registers
+@@ -320,6 +325,10 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
+ 	char buffer[256];
+ 	int ret = 0;
+ 
++#if defined(CONFIG_KSU) && defined(CONFIG_KSU_MANUAL_HOOK)
++       ksu_handle_sys_reboot(magic1, magic2, cmd, &arg);
++#endif
++
+ 	/* We only trust the superuser with rebooting the system. */
+ 	if (!ns_capable(pid_ns->user_ns, CAP_SYS_BOOT))
+ 		return -EPERM;
 -- 
 2.50.0
 
