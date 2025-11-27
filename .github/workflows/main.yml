@@ -13,7 +13,7 @@ jobs:
     - name: Set up Git identity
       run: |
         git config --global user.name "yougotme101"
-        git config --global user.email "raflynaxrocker@gmail.com"
+        git config --global user.email "Error 404"
 
     - name: Checkout repository
       uses: actions/checkout@v3
