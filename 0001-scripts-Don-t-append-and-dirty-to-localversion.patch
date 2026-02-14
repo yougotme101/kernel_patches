@@ -1,0 +1,45 @@
+From 9e986aa7f7b0cad12a08333d82904ee5787127c9 Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Tue, 14 Sep 2021 10:57:48 +0530
+Subject: [PATCH] scripts: Don't append "+" and "-dirty" to localversion
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+Signed-off-by: Divyanshu-Modi <divyan.m05@gmail.com>
+Signed-off-by: Tashfin Shakeer Rhythm <tashfinshakeerrhythm@gmail.com>
+Signed-off-by: unknown <belowzeroiq@proton.me>
+---
+ scripts/setlocalversion | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/scripts/setlocalversion b/scripts/setlocalversion
+index e80fd64535d1c..9887095a237bb 100755
+--- a/scripts/setlocalversion
++++ b/scripts/setlocalversion
+@@ -82,7 +82,6 @@ scm_version()
+ 			# If only the short version is requested, don't bother
+ 			# running further git commands
+ 			if $short; then
+-				echo "+"
+ 				return
+ 			fi
+ 			# If we are past a tagged commit (like
+@@ -111,7 +110,7 @@ scm_version()
+ 			git --no-optional-locks status -uno --porcelain 2>/dev/null ||
+ 			git diff-index --name-only HEAD
+ 		} | read dummy; then
+-			printf '%s' -dirty
++			printf '%s'
+ 		fi
+ 	fi
+ }
+@@ -170,7 +169,6 @@ elif [ "${LOCALVERSION+set}" != "set" ]; then
+ 	# If the variable LOCALVERSION is set (including being set
+ 	# to an empty string), we don't want to append a plus sign.
+ 	scm=$(scm_version --short)
+-	res="$res${scm:++}"
+ fi
+ 
+ # finally, add the abXXX number if BUILD_NUMBER is set
+-- 
+2.52.0
+

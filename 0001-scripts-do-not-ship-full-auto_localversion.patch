@@ -1,0 +1,33 @@
+From 6eac33f0a3ab9d911317201451638acf7cf9abd5 Mon Sep 17 00:00:00 2001
+From: "env." <162432464+belowzeroiq@users.noreply.github.com>
+Date: Thu, 14 Aug 2025 11:46:22 +0700
+Subject: [PATCH] scripts: do not ship full auto_localversion
+
+---
+ scripts/setlocalversion | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/scripts/setlocalversion b/scripts/setlocalversion
+index 9887095a237bb..e6ad5d9ee7ede 100755
+--- a/scripts/setlocalversion
++++ b/scripts/setlocalversion
+@@ -69,11 +69,11 @@ scm_version()
+ 	# Check for git and a git repo.
+ 	if head=$(git rev-parse --verify HEAD 2>/dev/null); then
+ 
+-		if [ -n "$android_release" ] && [ -n "$kmi_generation" ]; then
+-			printf '%s' "-$android_release-$kmi_generation"
+-		elif [ -n "$android_release" ]; then
+-			printf '%s' "-$android_release"
+-		fi
++		# if [ -n "$android_release" ] && [ -n "$kmi_generation" ]; then
++		# 	printf '%s' "-$android_release-$kmi_generation"
++		# elif [ -n "$android_release" ]; then
++		#	printf '%s' "-$android_release"
++		# fi
+ 		# If we are at a tagged commit (like "v2.6.30-rc6"), by default
+ 		# we ignore it and manually define VERSION in the top level
+ 		# Makefile. Alternatively, set --save-tag to keep the tag.
+-- 
+2.52.0
+
