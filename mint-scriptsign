@@ -1,0 +1,25 @@
+From 24b43e81d2d5be2ecdc19a1b19ca3d92822494ff Mon Sep 17 00:00:00 2001
+From: yougotme101 <emailsecondapi@gmail.com>
+Date: Sat, 22 Nov 2025 09:02:32 +0000
+Subject: [PATCH] scripts: sign builds
+
+---
+ scripts/mkcompile_h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/scripts/mkcompile_h b/scripts/mkcompile_h
+index 6a2a04d92f42f..814e7b0ab4a3b 100755
+--- a/scripts/mkcompile_h
++++ b/scripts/mkcompile_h
+@@ -38,6 +38,9 @@ else
+ 	LINUX_COMPILE_HOST=$KBUILD_BUILD_HOST
+ fi
+ 
++LINUX_COMPILE_BY="yougotme101"
++LINUX_COMPILE_HOST="MINT"
++
+ UTS_VERSION="#$VERSION"
+ CONFIG_FLAGS=""
+ if [ -n "$SMP" ] ; then CONFIG_FLAGS="SMP"; fi
+-- 
+2.49.0
