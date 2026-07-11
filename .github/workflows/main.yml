@@ -71,11 +71,27 @@ jobs:
             rsync -av --exclude='KernelSU/' "../susfs-$susfs_branch/kernel_patches/" .
           fi
           
-          # Apply SUSFS patch
+          # Apply SUSFS patch with fallback strategies
           PATCH_FILE="../susfs-$susfs_branch/kernel_patches/50_add_susfs_in_$susfs_branch.patch"
+          
           if [ -f "$PATCH_FILE" ]; then
             echo "Applying main SUSFS patch..."
-            git apply --whitespace=fix "$PATCH_FILE"
+          
+            if git apply --whitespace=fix "$PATCH_FILE"; then
+              echo "Patch applied normally."
+            
+            elif git apply --3way --whitespace=fix "$PATCH_FILE"; then
+              echo "Patch applied using 3-way merge."
+            
+            elif git apply --reject --whitespace=fix "$PATCH_FILE"; then
+              echo "Patch applied with rejects. Check *.rej files."
+            
+            else
+              echo "Failed to apply SUSFS patch."
+              git apply --check "$PATCH_FILE" || true
+              exit 1
+            fi
+          
           else
             echo "Patch file not found: $PATCH_FILE"
             exit 1
