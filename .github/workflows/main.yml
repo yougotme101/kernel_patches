@@ -48,7 +48,7 @@ jobs:
           echo "Processing: $susfs_branch -> $kernel_branch"
           
           # Clone SUSFS source
-          git clone --depth 1 -b "$susfs_branch" https://github.com/ShirkNeko/susfs4ksu.git "susfs-$susfs_branch"
+          git clone -b "$susfs_branch" https://github.com/ShirkNeko/susfs4ksu.git "susfs-$susfs_branch"
           
           # Get SUSFS version (only once)
           if [ -z "$SUSFS_VERSION" ]; then
@@ -60,7 +60,7 @@ jobs:
           fi
           
           # Clone kernel source
-          git clone --depth 1 -b "$kernel_branch" https://android.googlesource.com/kernel/common "kernel-$kernel_branch"
+          git clone -b "$kernel_branch" https://android.googlesource.com/kernel/common "kernel-$kernel_branch"
           
           # Generate patches
           pushd "kernel-$kernel_branch"
@@ -71,32 +71,51 @@ jobs:
             rsync -av --exclude='KernelSU/' "../susfs-$susfs_branch/kernel_patches/" .
           fi
           
-          # Apply SUSFS patch with fallback strategies
+          # Apply SUSFS patch with clean fallback strategies
           PATCH_FILE="../susfs-$susfs_branch/kernel_patches/50_add_susfs_in_$susfs_branch.patch"
-          
+
           if [ -f "$PATCH_FILE" ]; then
-            echo "Applying main SUSFS patch..."
-          
-            if git apply --whitespace=fix "$PATCH_FILE"; then
-              echo "Patch applied normally."
-            
-            elif git apply --3way --whitespace=fix "$PATCH_FILE"; then
-              echo "Patch applied using 3-way merge."
-            
-            elif git apply --reject --whitespace=fix "$PATCH_FILE"; then
-              echo "Patch applied with rejects. Check *.rej files."
-            
-            else
-              echo "Failed to apply SUSFS patch."
-              git apply --check "$PATCH_FILE" || true
-              exit 1
-            fi
-          
+              echo "Applying main SUSFS patch..."
+
+              # Save clean state
+              git reset --hard HEAD
+
+              if git apply --whitespace=fix "$PATCH_FILE"; then
+                  echo "Patch applied normally."
+
+              else
+                  echo "Normal apply failed, trying 3-way..."
+                  git reset --hard HEAD
+
+                  if git apply --3way --whitespace=fix "$PATCH_FILE"; then
+                      echo "Patch applied using 3-way merge."
+
+                  else
+                      echo "3-way failed, trying reject mode..."
+                      git reset --hard HEAD
+
+                      if git apply --reject --whitespace=fix "$PATCH_FILE"; then
+                          echo "Patch applied with rejects."
+
+                          if find . -name "*.rej" | grep -q .; then
+                              echo "Reject files detected:"
+                              find . -name "*.rej"
+                              exit 1
+                          fi
+
+                      else
+                          echo "Patch failed completely."
+                          git reset --hard HEAD
+                          exit 1
+                      fi
+                  fi
+              fi
+
           else
-            echo "Patch file not found: $PATCH_FILE"
-            exit 1
+              echo "Patch file not found: $PATCH_FILE"
+              exit 1
           fi
-          
+
           # Generate patches
           git add -A
           if ! git diff --staged --quiet; then
